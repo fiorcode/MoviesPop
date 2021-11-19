@@ -13,7 +13,7 @@ class MovieData {
 
     fun getMovieList(netResponse: NetResponse<List<Movie>>) {
         val service = RetrofitService.instance
-            .create(apiService::class.java).getPopularMovies()
+            .create(ApiService::class.java).getPopularMovies()
 
         service.enqueue(object: Callback<MovieListResponse> {
             override fun onResponse(

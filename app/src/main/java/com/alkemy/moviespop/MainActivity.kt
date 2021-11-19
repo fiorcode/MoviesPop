@@ -7,6 +7,7 @@ import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.alkemy.moviespop.adapter.MainRecyclerAdapter
 import com.alkemy.moviespop.api.NetStatus
 import com.alkemy.moviespop.databinding.ActivityMainBinding
@@ -18,6 +19,7 @@ import com.alkemy.moviespop.viewModel.MainViewModelFactory
 class MainActivity : AppCompatActivity(), MainRecyclerAdapter.Callback {
     private lateinit var binding: ActivityMainBinding
     private lateinit var adapter: MainRecyclerAdapter
+    private lateinit var recyclerView: RecyclerView
     private lateinit var progressBar: ProgressBar
     private val movies = mutableListOf<Movie>()
 
@@ -36,9 +38,11 @@ class MainActivity : AppCompatActivity(), MainRecyclerAdapter.Callback {
         progressBar.visibility = View.VISIBLE
 
         adapter = MainRecyclerAdapter(movies)
-        binding.rvMovies.layoutManager = GridLayoutManager(this, 1)
-        binding.rvMovies.adapter = adapter
         adapter.callback = this
+
+        recyclerView = binding.rvMovies
+        recyclerView.layoutManager = GridLayoutManager(this, 2)
+        recyclerView.adapter = adapter
 
         setObservers()
     }
