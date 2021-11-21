@@ -1,17 +1,19 @@
 package com.alkemy.moviespop
 
+import android.os.Build
 import android.os.Bundle
+import android.view.Menu
 import android.view.View
 import android.widget.ProgressBar
+import android.widget.SearchView
 import android.widget.Toast
 import androidx.activity.viewModels
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
-import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout.OnRefreshListener
 import com.alkemy.moviespop.adapter.MainRecyclerAdapter
 import com.alkemy.moviespop.api.*
 import com.alkemy.moviespop.databinding.ActivityMainBinding
@@ -32,6 +34,7 @@ class MainActivity : AppCompatActivity(), MainRecyclerAdapter.Callback {
     private lateinit var swipeRefreshLayout: SwipeRefreshLayout
     private lateinit var layoutManager: RecyclerView.LayoutManager
     private var movies = mutableListOf<Movie>()
+    private var allMoviesLoaded = mutableListOf<Movie>()
     private val genres = mutableListOf<Genre>()
 
     private var visibleItemCount: Int = 0
@@ -87,8 +90,32 @@ class MainActivity : AppCompatActivity(), MainRecyclerAdapter.Callback {
         })
 
         getMovies(pageId.toString())
+    }
 
-//        setObservers()
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.nav_menu, menu)
+        val search = menu.findItem(R.id.nav_search)
+        val searchView = search.actionView as SearchView
+        searchView.queryHint = "Movie name"
+        searchView.setOnQueryTextListener(object: SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                return false
+            }
+
+            @RequiresApi(Build.VERSION_CODES.N)
+            override fun onQueryTextChange(newText: String?): Boolean {
+                movies.clear()
+                if(newText!!.isNotEmpty()) {
+                    movies.addAll(allMoviesLoaded.filter { m -> m.title.contains(newText, true) })
+                } else {
+                    movies.addAll(allMoviesLoaded)
+                }
+                adapter.notifyDataSetChanged()
+                return true
+            }
+        })
+
+        return super.onCreateOptionsMenu(menu)
     }
 
     override fun onSupportNavigateUp(): Boolean {
@@ -100,20 +127,20 @@ class MainActivity : AppCompatActivity(), MainRecyclerAdapter.Callback {
 
     private fun getMovies(page: String) {
         progressBar.visibility = View.VISIBLE
-        var apiService: ApiService = RetrofitService.instance.create(ApiService::class.java)
-        var call: Call<MovieListResponse> = apiService.getPopularMovies(page)
+        val apiService: ApiService = RetrofitService.instance.create(ApiService::class.java)
+        val call: Call<MovieListResponse> = apiService.getPopularMovies(page)
         call.enqueue(object: Callback<MovieListResponse> {
             override fun onResponse(
                 call: Call<MovieListResponse>,
                 response: Response<MovieListResponse>
             ) {
                 progressBar.visibility = View.INVISIBLE
-                if(response!!.code() == 200) {
+                if(response.code() == 200) {
                     loading = true
                     setUpAdapter(response.body()!!.results)
                 }
                 else {
-                    Toast.makeText(applicationContext, "Status code: ${response!!.code()}", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(applicationContext, "Status code: ${response.code()}", Toast.LENGTH_SHORT).show()
                 }
             }
             override fun onFailure(call: Call<MovieListResponse>, t: Throwable) {
@@ -124,37 +151,18 @@ class MainActivity : AppCompatActivity(), MainRecyclerAdapter.Callback {
 
     }
 
-//    private fun setObservers() {
-//        viewModel.movieList.observe(this, {
-//            when (it.status) {
-//                NetStatus.LOADING -> {
-//                    progressBar.visibility = View.VISIBLE
-//                }
-//                NetStatus.SUCCESS -> {
-//                    progressBar.visibility = View.INVISIBLE
-//                    for (movie in it.data!!) {
-//                        movies.add(movie)
-//                    }
-//                    setUpAdapter(movies)
-//                }
-//                NetStatus.ERROR -> {
-//                    Toast.makeText(this, "Failed loading data", Toast.LENGTH_SHORT).show()
-//                    progressBar.visibility = View.INVISIBLE
-//                }
-//            }
-//        })
-//    }
-
     private fun setUpAdapter(body: List<Movie>) {
         if(movies.size == 0) {
             movies = body as MutableList<Movie>
+            allMoviesLoaded.addAll(body)
             adapter = MainRecyclerAdapter(movies)
             adapter.callback = this
             recyclerView.adapter = adapter
         }
         else {
-            var currentPosition = (recyclerView.layoutManager as LinearLayoutManager).findLastVisibleItemPosition()
-            movies.addAll(body!!)
+            val currentPosition = (recyclerView.layoutManager as LinearLayoutManager).findLastVisibleItemPosition()
+            movies.addAll(body)
+            allMoviesLoaded.addAll(body)
             adapter.notifyDataSetChanged()
             recyclerView.scrollToPosition(currentPosition)
         }

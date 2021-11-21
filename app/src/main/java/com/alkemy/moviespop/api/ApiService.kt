@@ -9,9 +9,6 @@ import retrofit2.http.Query
 
 interface ApiService {
     @GET("/3/movie/popular?api_key=${Global.APY_KEY}")
-    fun getPopularMovies(): Call<MovieListResponse>
-
-    @GET("/3/movie/popular?api_key=${Global.APY_KEY}")
     fun getPopularMovies(@Query("page") page: String): Call<MovieListResponse>
 
     @GET("/3/genre/movie/list?api_key=${Global.APY_KEY}")
