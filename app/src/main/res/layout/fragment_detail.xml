@@ -2,26 +2,42 @@
 <FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/white_smoke">
+    android:background="@color/white_smoke"
+    android:clickable="true"
+    android:focusable="true">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/movie_detail"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:layout_gravity="center_vertical">
 
         <ImageView
             android:id="@+id/iv_movie_image"
             android:layout_width="128dp"
             android:layout_height="192dp"
-            android:paddingStart="16dp"
-            android:paddingTop="8dp"
-            android:paddingEnd="8dp"
+            android:layout_margin="8dp"
+            android:contentDescription="POSTER"
             android:src="@drawable/ic_launcher_background"
-            android:contentDescription="IMAGE"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"/>
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ImageView
+            android:id="@+id/iv_clasification"
+            android:layout_width="48dp"
+            android:layout_height="32dp"
+            android:layout_margin="8dp"
+            android:contentDescription="CLASIFICATION"
+            android:adjustViewBounds="false"
+            android:background="#FFFFFF"
+            app:srcCompat="@drawable/g"
+            app:layout_constraintTop_toBottomOf="@+id/iv_movie_image"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintBottom_toTopOf="@+id/tv_overview"
+            android:visibility="visible"/>
 
         <TextView
             android:id="@+id/tv_movie_title_detail"
@@ -36,21 +52,44 @@
             android:textColor="@color/black"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/iv_movie_image"
-            app:layout_constraintTop_toTopOf="parent"/>
+            app:layout_constraintTop_toTopOf="parent" />
 
-        <TextView
-            android:id="@+id/tv_vote_average"
+        <LinearLayout
+            android:id="@+id/ll_rating"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:paddingStart="8dp"
-            android:paddingEnd="8dp"
             android:paddingBottom="8dp"
-            android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-            android:textColor="@color/black"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.0"
+            android:gravity="center"
+            android:orientation="horizontal"
             app:layout_constraintStart_toEndOf="@id/iv_movie_image"
-            app:layout_constraintTop_toBottomOf="@id/tv_movie_title_detail" />
+            app:layout_constraintTop_toBottomOf="@id/tv_movie_title_detail">
+
+            <TextView
+                android:id="@+id/tv_vote_average"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+                android:textColor="@color/black"
+                app:layout_constraintEnd_toStartOf="@+id/ratingBar"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:text="6.8" />
+
+            <RatingBar
+                android:id="@+id/detailRatingBar"
+                style="@android:style/Widget.Material.RatingBar.Small"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:isIndicator="true"
+                android:progressTint="#FFC107"
+                android:scaleX="1"
+                android:scaleY="1"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/tv_vote_average"
+                app:layout_constraintTop_toTopOf="parent" />
+        </LinearLayout>
 
         <TextView
             android:id="@+id/tv_date"
@@ -64,7 +103,8 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toEndOf="@id/iv_movie_image"
-            app:layout_constraintTop_toBottomOf="@id/tv_vote_average" />
+            app:layout_constraintTop_toBottomOf="@id/ll_rating"
+            tools:text="july 5, 2021" />
 
         <TextView
             android:id="@+id/tv_lang"
@@ -78,22 +118,55 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toEndOf="@id/iv_movie_image"
-            app:layout_constraintTop_toBottomOf="@id/tv_date" />
+            app:layout_constraintTop_toBottomOf="@id/tv_date"
+            tools:text="Japanese (JA)" />
+
+        <TextView
+            android:id="@+id/tv_genres"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:paddingBottom="8dp"
+            android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+            android:textColor="@color/black"
+            android:maxLines="3"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toEndOf="@+id/iv_movie_image"
+            app:layout_constraintTop_toBottomOf="@+id/tv_lang"
+            tools:text="Romantic, Action, Fiction" />
 
         <TextView
             android:id="@+id/tv_overview"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
             android:layout_marginTop="2dp"
             android:paddingStart="16dp"
             android:paddingTop="8dp"
             android:paddingEnd="16dp"
+            android:scrollbars = "vertical"
             android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
             android:textColor="@color/black"
+            app:layout_constraintBottom_toTopOf="@+id/iv_movie_image_back"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.18"
+            app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/iv_movie_image" />
+            app:layout_constraintTop_toBottomOf="@id/iv_clasification"
+            app:layout_constraintVertical_bias="1.0" />
+
+        <ImageView
+            android:id="@+id/iv_movie_image_back"
+            android:layout_width="0dp"
+            android:layout_height="128dp"
+            android:layout_margin="8dp"
+            android:contentDescription="POSTER_BACK"
+            android:src="@drawable/ic_launcher_background"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.498"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tv_overview" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </FrameLayout>
