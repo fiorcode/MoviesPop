@@ -34,8 +34,8 @@ class MainActivity : AppCompatActivity(), MainRecyclerAdapter.Callback {
     private lateinit var swipeRefreshLayout: SwipeRefreshLayout
     private lateinit var layoutManager: RecyclerView.LayoutManager
 
-    private var allMoviesLoaded = mutableListOf<Movie>()
     private var movies = mutableListOf<Movie>()
+    private var allMoviesLoaded = mutableListOf<Movie>()
     private val genres = mutableListOf<Genre>()
 
     private var visibleItemCount: Int = 0
@@ -135,7 +135,7 @@ class MainActivity : AppCompatActivity(), MainRecyclerAdapter.Callback {
                 progressBar.visibility = View.INVISIBLE
                 if(response.code() == 200) {
                     loading = true
-                    setUpAdapter(response.body()!!.movies)
+                    setUpAdapter(response.body()!!.results)
                 }
                 else {
                     Toast.makeText(applicationContext, "Status code: ${response.code()}", Toast.LENGTH_SHORT).show()
