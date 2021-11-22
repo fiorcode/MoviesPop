@@ -16,7 +16,7 @@ interface ApiService {
 }
 
 data class MovieListResponse(
-    val results: List<Movie>
+    val movies: List<Movie>
 )
 
 data class GenreListResponse(
