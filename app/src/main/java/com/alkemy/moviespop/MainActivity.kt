@@ -33,8 +33,9 @@ class MainActivity : AppCompatActivity(), MainRecyclerAdapter.Callback {
     private lateinit var progressBar: ProgressBar
     private lateinit var swipeRefreshLayout: SwipeRefreshLayout
     private lateinit var layoutManager: RecyclerView.LayoutManager
-    private var movies = mutableListOf<Movie>()
+
     private var allMoviesLoaded = mutableListOf<Movie>()
+    private var movies = mutableListOf<Movie>()
     private val genres = mutableListOf<Genre>()
 
     private var visibleItemCount: Int = 0
@@ -55,12 +56,11 @@ class MainActivity : AppCompatActivity(), MainRecyclerAdapter.Callback {
         setContentView(binding.root)
 
         layoutManager = GridLayoutManager(this, 2)
+        recyclerView = binding.rvMovies
+        recyclerView.layoutManager = layoutManager
 
         progressBar = binding.pbMain
         progressBar.visibility = View.VISIBLE
-
-        recyclerView = binding.rvMovies
-        recyclerView.layoutManager = layoutManager
 
         swipeRefreshLayout = binding.swipeRefreshLayout
 
@@ -71,6 +71,42 @@ class MainActivity : AppCompatActivity(), MainRecyclerAdapter.Callback {
             swipeRefreshLayout.isRefreshing = false
         }
 
+        getGenres()
+        getMovies(pageId.toString())
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.nav_menu, menu)
+        val search = menu.findItem(R.id.nav_search)
+        val searchView = search.actionView as SearchView
+        searchView.queryHint = "Movie name"
+        searchView.setOnQueryTextListener(object: SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                return false
+            }
+            @RequiresApi(Build.VERSION_CODES.N)
+            override fun onQueryTextChange(newText: String?): Boolean {
+                movies.clear()
+                if(newText!!.isNotEmpty()) {
+                    movies.addAll(allMoviesLoaded.filter { m -> m.title.contains(newText, true) })
+                } else {
+                    movies.addAll(allMoviesLoaded)
+                }
+                adapter.notifyDataSetChanged()
+                return true
+            }
+        })
+        return super.onCreateOptionsMenu(menu)
+    }
+
+    override fun onSupportNavigateUp(): Boolean {
+        this.supportActionBar!!.title = "MoviesPop"
+        this.supportActionBar!!.setDisplayHomeAsUpEnabled(false)
+        onBackPressed()
+        return true
+    }
+
+    private fun getGenres() {
         viewModel.genreList.observe(this, {
             when (it.status) {
                 NetStatus.LOADING -> {
@@ -88,41 +124,6 @@ class MainActivity : AppCompatActivity(), MainRecyclerAdapter.Callback {
                 }
             }
         })
-
-        getMovies(pageId.toString())
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        menuInflater.inflate(R.menu.nav_menu, menu)
-        val search = menu.findItem(R.id.nav_search)
-        val searchView = search.actionView as SearchView
-        searchView.queryHint = "Movie name"
-        searchView.setOnQueryTextListener(object: SearchView.OnQueryTextListener {
-            override fun onQueryTextSubmit(query: String?): Boolean {
-                return false
-            }
-
-            @RequiresApi(Build.VERSION_CODES.N)
-            override fun onQueryTextChange(newText: String?): Boolean {
-                movies.clear()
-                if(newText!!.isNotEmpty()) {
-                    movies.addAll(allMoviesLoaded.filter { m -> m.title.contains(newText, true) })
-                } else {
-                    movies.addAll(allMoviesLoaded)
-                }
-                adapter.notifyDataSetChanged()
-                return true
-            }
-        })
-
-        return super.onCreateOptionsMenu(menu)
-    }
-
-    override fun onSupportNavigateUp(): Boolean {
-        this.supportActionBar!!.title = "MoviesPop"
-        this.supportActionBar!!.setDisplayHomeAsUpEnabled(false)
-        onBackPressed()
-        return true
     }
 
     private fun getMovies(page: String) {
@@ -130,14 +131,11 @@ class MainActivity : AppCompatActivity(), MainRecyclerAdapter.Callback {
         val apiService: ApiService = RetrofitService.instance.create(ApiService::class.java)
         val call: Call<MovieListResponse> = apiService.getPopularMovies(page)
         call.enqueue(object: Callback<MovieListResponse> {
-            override fun onResponse(
-                call: Call<MovieListResponse>,
-                response: Response<MovieListResponse>
-            ) {
+            override fun onResponse(call: Call<MovieListResponse>, response: Response<MovieListResponse>) {
                 progressBar.visibility = View.INVISIBLE
                 if(response.code() == 200) {
                     loading = true
-                    setUpAdapter(response.body()!!.results)
+                    setUpAdapter(response.body()!!.movies)
                 }
                 else {
                     Toast.makeText(applicationContext, "Status code: ${response.code()}", Toast.LENGTH_SHORT).show()
@@ -166,6 +164,8 @@ class MainActivity : AppCompatActivity(), MainRecyclerAdapter.Callback {
             adapter.notifyDataSetChanged()
             recyclerView.scrollToPosition(currentPosition)
         }
+
+        // LOAD MORE ITEM MAGIC
         recyclerView.addOnScrollListener(object: RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 if(dy > 0) {
